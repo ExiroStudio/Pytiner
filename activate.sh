@@ -1,4 +1,2 @@
-pytineron() {
-    source .pytiner_env/bin/activate
-    cd code/
-}
+source .pytiner_env/bin/activate
+cd code/

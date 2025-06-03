@@ -47,21 +47,25 @@ void add_package_to_requirements(const char *package_name)
     fclose(file);
 }
 
-void remove_package_from_requirements(const char *package_name) {
+void remove_package_from_requirements(const char *package_name)
+{
     FILE *file = fopen("requirements.txt", "r");
-    if (!file) {
+    if (!file)
+    {
         printf("[Pytiner] ERROR: Failed to open requirements.txt for reading\n");
         return;
     }
 
-    char lines[100][256];  // Simpan maksimal 100 baris
+    char lines[100][256]; // Simpan maksimal 100 baris
     int count = 0;
 
-    while (fgets(lines[count], sizeof(lines[count]), file)) {
+    while (fgets(lines[count], sizeof(lines[count]), file))
+    {
         // Strip newline
         lines[count][strcspn(lines[count], "\r\n")] = 0;
 
-        if (strcmp(lines[count], package_name) != 0) {
+        if (strcmp(lines[count], package_name) != 0)
+        {
             count++;
         }
     }
@@ -69,12 +73,14 @@ void remove_package_from_requirements(const char *package_name) {
     fclose(file);
 
     file = fopen("requirements.txt", "w");
-    if (!file) {
+    if (!file)
+    {
         printf("[Pytiner] ERROR: Failed to open requirements.txt for writing\n");
         return;
     }
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         fprintf(file, "%s\n", lines[i]);
     }
 
@@ -114,6 +120,7 @@ void setup_venv()
         printf("[Pytiner] Creating virtual environment using: %s\n", chosen);
         system(command);
         printf("[Pytiner] Virtual environment created at .pytiner_env\n");
+        printf("[Pytiner] Setup complete!\n");
     }
     else
     {
@@ -190,7 +197,6 @@ void on_container()
         printf("    source activate.sh\n");
     }
 }
-
 
 void uninstall_package(const char *package_name)
 {
@@ -313,7 +319,9 @@ int main(int argc, char *argv[])
         {
             install_package(argv[2]);
         }
-    } else if (strcmp(argv[1], "uninstall") == 0) {
+    }
+    else if (strcmp(argv[1], "uninstall") == 0)
+    {
         uninstall_package(argv[2]);
     }
     else if (strcmp(argv[1], "on") == 0)
