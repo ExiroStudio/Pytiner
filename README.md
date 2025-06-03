@@ -119,5 +119,3 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 Made with ❤️ and a bit of C magic.
-
-```
