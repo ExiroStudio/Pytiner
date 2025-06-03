@@ -9,13 +9,16 @@
 #define OS_WINDOWS 0
 #endif
 
-int is_package_in_file(const char *package_name, FILE *file) {
+int is_package_in_file(const char *package_name, FILE *file)
+{
     char line[256];
     rewind(file);
 
-    while (fgets(line, sizeof(line), file)) {
+    while (fgets(line, sizeof(line), file))
+    {
         line[strcspn(line, "\r\n")] = 0;
-        if (strcmp(line, package_name) == 0) {
+        if (strcmp(line, package_name) == 0)
+        {
             return 1;
         }
     }
@@ -23,14 +26,17 @@ int is_package_in_file(const char *package_name, FILE *file) {
     return 0;
 }
 
-void add_package_to_requirements(const char *package_name) {
+void add_package_to_requirements(const char *package_name)
+{
     FILE *file = fopen("requirements.txt", "a+");
-    if (!file) {
+    if (!file)
+    {
         printf("[Pytiner] ERROR: Failed to open or create requirements.txt\n");
         return;
     }
 
-    if (is_package_in_file(package_name, file)) {
+    if (is_package_in_file(package_name, file))
+    {
         printf("[Pytiner] Package '%s' already exists in requirements.txt\n", package_name);
         fclose(file);
         return;
@@ -41,7 +47,43 @@ void add_package_to_requirements(const char *package_name) {
     fclose(file);
 }
 
-int check_python(const char *cmd) {
+void remove_package_from_requirements(const char *package_name) {
+    FILE *file = fopen("requirements.txt", "r");
+    if (!file) {
+        printf("[Pytiner] ERROR: Failed to open requirements.txt for reading\n");
+        return;
+    }
+
+    char lines[100][256];  // Simpan maksimal 100 baris
+    int count = 0;
+
+    while (fgets(lines[count], sizeof(lines[count]), file)) {
+        // Strip newline
+        lines[count][strcspn(lines[count], "\r\n")] = 0;
+
+        if (strcmp(lines[count], package_name) != 0) {
+            count++;
+        }
+    }
+
+    fclose(file);
+
+    file = fopen("requirements.txt", "w");
+    if (!file) {
+        printf("[Pytiner] ERROR: Failed to open requirements.txt for writing\n");
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        fprintf(file, "%s\n", lines[i]);
+    }
+
+    fclose(file);
+    printf("[Pytiner] Package '%s' removed from requirements.txt\n", package_name);
+}
+
+int check_python(const char *cmd)
+{
     char check_command[100];
     if (OS_WINDOWS)
         snprintf(check_command, sizeof(check_command), "%s --version >nul 2>&1", cmd);
@@ -51,116 +93,253 @@ int check_python(const char *cmd) {
     return system(check_command) == 0;
 }
 
-void setup_venv() {
+void setup_venv()
+{
     const char *interpreters[] = {"python", "python3", "py"};
     const char *chosen = NULL;
 
-    for (int i = 0; i < 3; i++) {
-        if (check_python(interpreters[i])) {
+    for (int i = 0; i < 3; i++)
+    {
+        if (check_python(interpreters[i]))
+        {
             chosen = interpreters[i];
             break;
         }
     }
 
-    if (chosen) {
+    if (chosen)
+    {
         char command[128];
         snprintf(command, sizeof(command), "%s -m venv .pytiner_env", chosen);
         printf("[Pytiner] Creating virtual environment using: %s\n", chosen);
         system(command);
         printf("[Pytiner] Virtual environment created at .pytiner_env\n");
-    } else {
+    }
+    else
+    {
         printf("[Pytiner] ERROR: Python interpreter not found.\n");
     }
 }
 
-void run_container(const char *filename) {
+void run_container(const char *filename)
+{
     printf("[Pytiner] Running container with file: %s\n", filename);
     char command[256];
 
-    if (OS_WINDOWS) {
+    if (OS_WINDOWS)
+    {
         snprintf(command, sizeof(command), ".\\.pytiner_env\\Scripts\\python.exe code\\%s", filename);
-    } else {
+    }
+    else
+    {
         snprintf(command, sizeof(command), "./.pytiner_env/bin/python3 code/%s", filename);
     }
 
     system(command);
 }
 
-int cmd_exists(const char *cmd) {
+int cmd_exists(const char *cmd)
+{
     char check[256];
     snprintf(check, sizeof(check), "command -v %s >/dev/null 2>&1", cmd);
     return system(check) == 0;
 }
 
-void on_container() {
-    if (OS_WINDOWS) {
+void on_container()
+{
+    if (OS_WINDOWS)
+    {
         printf("[Pytiner] Opening new terminal with virtual environment on Windows...\n");
-        system("start cmd /k \".\\.pytiner_env\\Scripts\\activate\"");
+        system("start cmd /k \"cd code && ..\\.pytiner_env\\Scripts\\activate\"");
         return;
     }
 
     printf("[Pytiner] Searching for available terminal on Linux/macOS...\n");
 
-    if (cmd_exists("gnome-terminal")) {
-        system("gnome-terminal -- bash -c 'source ./.pytiner_env/bin/activate; exec bash'");
-    } else if (cmd_exists("konsole")) {
-        system("konsole --noclose -e bash -c 'source ./.pytiner_env/bin/activate'");
-    } else if (cmd_exists("xfce4-terminal")) {
-        system("xfce4-terminal --hold -e 'bash -c \"source ./.pytiner_env/bin/activate; exec bash\"'");
-    } else if (cmd_exists("x-terminal-emulator")) {
-        system("x-terminal-emulator -e bash -c 'source ./.pytiner_env/bin/activate; exec bash'");
-    } else if (cmd_exists("alacritty")) {
-        system("alacritty -e bash -c 'source ./.pytiner_env/bin/activate; exec bash'");
-    } else if (cmd_exists("open")) {
+    if (cmd_exists("gnome-terminal"))
+    {
+        system("gnome-terminal -- bash -c 'cd code && source ../.pytiner_env/bin/activate; exec bash'");
+    }
+    else if (cmd_exists("konsole"))
+    {
+        system("konsole --noclose -e bash -c 'cd code && source ../.pytiner_env/bin/activate; exec bash'");
+    }
+    else if (cmd_exists("xfce4-terminal"))
+    {
+        system("xfce4-terminal --hold -e 'bash -c \"cd code && source ../.pytiner_env/bin/activate; exec bash\"'");
+    }
+    else if (cmd_exists("x-terminal-emulator"))
+    {
+        system("x-terminal-emulator -e bash -c 'cd code && source ../.pytiner_env/bin/activate; exec bash'");
+    }
+    else if (cmd_exists("alacritty"))
+    {
+        system("alacritty -e bash -c 'cd code && source ../.pytiner_env/bin/activate; exec bash'");
+    }
+    else if (cmd_exists("open"))
+    {
         printf("[Pytiner] Attempting to open Terminal.app on macOS...\n");
-        system("open -a Terminal .");
-    } else {
+        system("open -a Terminal ./code");
+        printf("[Pytiner] After terminal opens, run:\n");
+        printf("    source ../.pytiner_env/bin/activate\n");
+    }
+    else
+    {
         printf("[Pytiner] ERROR: No supported terminal found!\n");
-        printf("[Pytiner] Please activate the virtual environment manually.\n");
+        printf("[Pytiner] Please activate the virtual environment manually:\n");
+        printf("    source activate.sh\n");
     }
 }
 
-void install_package(const char *package_name) {
+
+void uninstall_package(const char *package_name)
+{
     char command[256];
 
-    if (OS_WINDOWS) {
+    if (OS_WINDOWS)
+    {
+        snprintf(command, sizeof(command), ".\\.pytiner_env\\Scripts\\pip.exe uninstall %s", package_name);
+    }
+    else
+    {
+        snprintf(command, sizeof(command), "./.pytiner_env/bin/pip uninstall %s", package_name);
+    }
+
+    printf("[Pytiner] Uninstalling package: %s\n", package_name);
+    int ret = system(command);
+    if (ret != 0)
+    {
+        printf("[Pytiner] ERROR: Failed to uninstall package: %s\n", package_name);
+    }
+    else
+    {
+        remove_package_from_requirements(package_name);
+    }
+}
+
+void install_package(const char *package_name)
+{
+    char command[256];
+
+    if (OS_WINDOWS)
+    {
         snprintf(command, sizeof(command), ".\\.pytiner_env\\Scripts\\pip.exe install %s", package_name);
-    } else {
+    }
+    else
+    {
         snprintf(command, sizeof(command), "./.pytiner_env/bin/pip install %s", package_name);
     }
 
     printf("[Pytiner] Installing package: %s\n", package_name);
     int ret = system(command);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         printf("[Pytiner] ERROR: Failed to install package: %s\n", package_name);
-    } else {
+    }
+    else
+    {
         add_package_to_requirements(package_name);
     }
 }
 
-int main(int argc, char *argv[]) {
-    if (argc < 2) {
+void install_from_requirements()
+{
+    FILE *file = fopen("requirements.txt", "r");
+    if (!file)
+    {
+        printf("[Pytiner] ERROR: requirements.txt not found.\n");
+        return;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file))
+    {
+        // Remove newline characters
+        line[strcspn(line, "\r\n")] = 0;
+
+        if (strlen(line) == 0)
+            continue;
+
+        printf("[Pytiner] Installing package from requirements: %s\n", line);
+
+        char command[300];
+        if (OS_WINDOWS)
+        {
+            snprintf(command, sizeof(command), ".\\.pytiner_env\\Scripts\\pip.exe install %s", line);
+        }
+        else
+        {
+            snprintf(command, sizeof(command), "./.pytiner_env/bin/pip install %s", line);
+        }
+
+        int result = system(command);
+        if (result != 0)
+        {
+            printf("[Pytiner] ERROR: Failed to install %s\n", line);
+        }
+        else
+        {
+            printf("[Pytiner] Installed %s successfully\n", line);
+        }
+    }
+
+    fclose(file);
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 2)
+    {
         printf("Usage: pytiner [setup | run <file.py> | install <package> | on]\n");
         return 1;
     }
 
-    if (strcmp(argv[1], "setup") == 0) {
+    if (strcmp(argv[1], "setup") == 0)
+    {
         setup_venv();
-    } else if (strcmp(argv[1], "on") == 0) {
+    }
+    else if (strcmp(argv[1], "install") == 0)
+    {
+        if (argc < 3)
+        {
+            printf("Usage: pytiner install <package | requirement>\n");
+            return 1;
+        }
+        if (strcmp(argv[2], "requirement") == 0)
+        {
+            install_from_requirements();
+        }
+        else
+        {
+            install_package(argv[2]);
+        }
+    } else if (strcmp(argv[1], "uninstall") == 0) {
+        uninstall_package(argv[2]);
+    }
+    else if (strcmp(argv[1], "on") == 0)
+    {
         on_container();
-    } else if (strcmp(argv[1], "install") == 0) {
-        if (argc < 3) {
+    }
+    else if (strcmp(argv[1], "install") == 0)
+    {
+        if (argc < 3)
+        {
             printf("Usage: pytiner install <package>\n");
             return 1;
         }
         install_package(argv[2]);
-    } else if (strcmp(argv[1], "run") == 0) {
-        if (argc < 3) {
+    }
+    else if (strcmp(argv[1], "run") == 0)
+    {
+        if (argc < 3)
+        {
             printf("Usage: pytiner run <file.py>\n");
             return 1;
         }
         run_container(argv[2]);
-    } else {
+    }
+    else
+    {
         printf("Unknown command: %s\n", argv[1]);
         printf("Usage: pytiner [setup | run <file.py> | install <package> | on]\n");
         return 1;
