@@ -248,6 +248,35 @@ void install_package(const char *package_name)
     }
 }
 
+void help()
+{
+    printf("\n[Pytiner Help Guide]\n");
+    printf("============================================================\n");
+    printf("NOTE: On Linux or macOS, always run Pytiner using './pytiner'\n");
+    printf("      Example: ./pytiner setup\n\n");
+
+    printf("Available Commands:\n");
+    printf("  setup                       - Create a virtual environment (.pytiner_env)\n");
+    printf("  on                          - Open a new terminal and auto-activate the venv\n");
+    printf("                                (Only works in GUI environments)\n");
+    printf("  run [file.py]               - Run the specified Python file inside the 'code/' folder\n");
+    printf("                                using the virtual environment\n");
+    printf("  install [package]           - Install a Python package and add it to requirements.txt\n");
+    printf("  uninstall [package]         - Uninstall a package and remove it from requirements.txt\n\n");
+    printf("  install requirement         - Install the Python package in requirements.txt\n");
+
+    printf("Advanced CLI Commands:\n");
+    printf("  ./pytiner.sh                - Load extra shell functions for CLI environments\n");
+    printf("    > pytineron               - Activate the virtual environment and enter 'code/'\n");
+    printf("    > pytineroff / deactivate - Deactivate the virtual environment\n");
+
+    printf("============================================================\n");
+    printf("Tips:\n");
+    printf("- Use 'pytineron' for long sessions inside the venv\n");
+    printf("- Combine with aliases or bash functions for better experience\n\n");
+}
+
+
 void install_from_requirements()
 {
     FILE *file = fopen("requirements.txt", "r");
@@ -296,13 +325,18 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        printf("Usage: pytiner [setup | run <file.py> | install <package> | on]\n");
+        help();
         return 1;
     }
 
     if (strcmp(argv[1], "setup") == 0)
     {
         setup_venv();
+    }
+    else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
+    {
+        help();
+        return 1;
     }
     else if (strcmp(argv[1], "install") == 0)
     {
