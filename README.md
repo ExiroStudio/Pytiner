@@ -22,11 +22,13 @@
 ```bash
 git clone https://github.com/your-username/Pytiner.git
 cd Pytiner
+./pytiner setup
 ```
 
 ---
 
 ## ⚙️ Commands Overview
+if you are using this pytiner on windows then you can just run `pytiner` no need like `./pytiner`
 
 | Command                     | Description                                                 |
 | --------------------------- | ----------------------------------------------------------- |
