@@ -266,7 +266,7 @@ void help()
     printf("  install requirement         - Install the Python package in requirements.txt\n");
 
     printf("Advanced CLI Commands:\n");
-    printf("  ./pytiner.sh                - Load extra shell functions for CLI environments\n");
+    printf("  source pytiner.sh                - Load extra shell functions for CLI environments\n");
     printf("    > pytineron               - Activate the virtual environment and enter 'code/'\n");
     printf("    > pytineroff / deactivate - Deactivate the virtual environment\n");
 
